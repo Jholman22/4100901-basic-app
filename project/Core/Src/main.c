@@ -54,7 +54,15 @@ static void MX_GPIO_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+__weak void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(GPIO_Pin);
+  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+  /* NOTE: This function should not be modified, when the callback is needed,
+           the HAL_GPIO_EXTI_Callback could be implemented in the user file
+   */
+}
 /* USER CODE END 0 */
 
 /**
@@ -93,9 +101,19 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (timeout_tick < HAL_GetTick()) {
-		  timeout_tick = HAL_GetTick()+500;
-	  	  GPIOA->ODR ^=0x01 << 5;}
+
+	  if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET)
+	 	  {
+	 		  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin,GPIO_PIN_SET);
+	 	  }
+	 	  else
+	 	  {
+	 		  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin,GPIO_PIN_RESET);
+	 	  }
+
+	  //if (timeout_tick < HAL_GetTick()) {
+		//  timeout_tick = HAL_GetTick()+500;
+	  	  //GPIOA->ODR ^=0x01 << 5;}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -165,11 +183,11 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : Push_Botton_Pin */
-  GPIO_InitStruct.Pin = Push_Botton_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  /*Configure GPIO pin : PB1_Pin */
+  GPIO_InitStruct.Pin = PB1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(Push_Botton_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(PB1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LD2_Pin */
   GPIO_InitStruct.Pin = LD2_Pin;
@@ -177,6 +195,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
